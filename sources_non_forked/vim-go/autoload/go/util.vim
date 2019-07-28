@@ -468,7 +468,7 @@ function! go#util#tempdir(prefix) abort
   endif
 
   " Not great randomness, but "good enough" for our purpose here.
-  let l:rnd = sha256(printf('%s%s', localtime(), fnamemodify(bufname(''), ":p")))
+  let l:rnd = sha256(printf('%s%s', reltimestr(reltime()), fnamemodify(bufname(''), ":p")))
   let l:tmp = printf("%s/%s%s", l:dir, a:prefix, l:rnd)
   call mkdir(l:tmp, 'p', 0700)
   return l:tmp
@@ -557,7 +557,9 @@ function! go#util#SetEnv(name, value) abort
     let l:remove = 1
   endif
 
-  call execute('let $' . a:name . ' = "' . a:value . '"')
+  " wrap the value in single quotes so that it will work on windows when there
+  " are backslashes present in the value (e.g. $PATH).
+  call execute('let $' . a:name . " = '" . a:value . "'")
 
   if l:remove
     function! s:remove(name) abort
